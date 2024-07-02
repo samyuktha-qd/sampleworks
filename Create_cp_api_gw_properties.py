@@ -10,10 +10,7 @@ end_points = [
             "POST" : "cp_ui_open_dock_loc_config",
             "GET" : "cp_ui_open_dock_loc_config"
         }
-    }
-]
-'''
-end_points = [
+    },
     {
         "endpoint" : "stop/{stop_id}",
         "methods"  : ["GET"],
@@ -22,7 +19,7 @@ end_points = [
         }
     }
 ]
-'''
+
 meta = {}
 
 def create_config_for_path(path, parent_path, meta):
