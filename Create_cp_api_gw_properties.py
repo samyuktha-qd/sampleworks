@@ -1,6 +1,7 @@
 import json
 
 dups=[]
+apival="CustomerPortalAPIs"
 
 end_points = [
     {
@@ -9,15 +10,22 @@ end_points = [
         "lambda"   : {
             "POST" : "cp_ui_open_dock_loc_config",
             "GET" : "cp_ui_open_dock_loc_config"
+        },
+        "authorizer": {
+            "POST" : "NONE",
+            "GET" : "CUSTOM"
         }
-    },
+    }, 
     {
-        "endpoint" : "stop/{stop_id}",
-        "methods"  : ["GET"],
+        "endpoint" : "book/{book_id}",
+        "methods"  : ["POST"],
         "lambda"   : {
-            "GET" :'cp_ui_get_stop_detail'
-        }
-    }
+            "POST" : "random-function"
+        },
+        "authorizer": {
+            "POST" : "NONE"
+        }        
+    }   
 ]
 
 meta = {}
@@ -62,18 +70,21 @@ resource "aws_api_gateway_method" "{val['fp']}_options" {{
     """
     print (options)
     for method in val.get('methods'):
+        authorizer_type = val.get('authorizer')[method]
+        
         gw_method_str = f"""
 resource "aws_api_gateway_method" "{val['fp']}_{method.lower()}" {{
   rest_api_id   = aws_api_gateway_rest_api.customer_portal.id
   resource_id   = aws_api_gateway_resource.{val['fp']}.id
   http_method   = "{method}"
-  authorization = "CUSTOM"
+  authorization = "{authorizer_type}"
   authorizer_id = aws_api_gateway_authorizer.portal_authorizer.id
 }}
 """
         if val['fp']+"_"+method.lower() not in dups:
             print (gw_method_str)
             dups.append(val['fp']+"_"+method.lower())
+
 
 def print_aws_api_gateway_integration(val):
     if val.get('methods') is None:
@@ -155,6 +166,7 @@ resource "aws_api_gateway_method_response" "{val['fp']}_{method.lower()}_respons
             print (gw_method_rsp)
             dups.append(val['fp']+"_"+method.lower()+"_response")
 
+
 def print_aws_api_gateway_integration_response(val):
     if val.get('methods') is None:
         return
@@ -193,6 +205,7 @@ resource "aws_api_gateway_integration_response" "{val['fp']}_options_integration
             print (gw_method_int_rsp)
             dups.append(val['fp']+"_"+method.lower()+"_integration_response")
 
+
 def print_aws_lambda_permission(val):
     if val.get('lambda') is None:
         return
@@ -211,6 +224,19 @@ resource "aws_lambda_permission" "{lambda_method}_permission" {{
             print (aws_lambda_permission)
             dups.append(lambda_method+"_permission")
 
+def print_aws_api_gateway_rest_api(apival):
+  api_str = f"""
+  resource "aws_api_gateway_rest_api" "customer_portal" {{
+    name        = "{apival}"
+    description = "{apival} API Gateway"
+    endpoint_configuration {{
+      types = ["REGIONAL"]
+      }}
+  }}
+  """
+  print(api_str)  
+
+    
 meta_aa = {}
 
 for end_pt in end_points:
@@ -231,10 +257,12 @@ for end_pt in end_points:
             meta_aa[last_key] = aa
     meta_aa[last_key]['methods'] = end_pt['methods']
     meta_aa[last_key]['lambda'] = end_pt['lambda']
+    meta_aa[last_key]['authorizer'] = end_pt['authorizer']
 
     
 
 print (json.dumps(meta_aa, indent=4))
+print_aws_api_gateway_rest_api(apival)
 
 for pt in meta_aa:
     val = meta_aa[pt]
