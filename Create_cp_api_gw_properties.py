@@ -5,27 +5,47 @@ apival="CustomerPortalAPIs"
 
 end_points = [
     {
-        "endpoint" : "locations/config/final/{m_loc_id}",
-        "methods"  : ["POST", "GET"],
+        "endpoint" : "appointments",
+        "methods"  : ["POST", "PUT"],
         "lambda"   : {
-            "POST" : "cp_ui_open_dock_loc_config",
-            "GET" : "cp_ui_open_dock_loc_config"
+            "POST" : "new_appt",
+            "PUT" : "update_resc_appt"
         },
         "authorizer": {
-            "POST" : "NONE",
-            "GET" : "CUSTOM"
+            "POST" : "CUSTOM",
+            "PUT" : "CUSTOM"
         }
     }, 
     {
-        "endpoint" : "book/{book_id}",
+        "endpoint" : "appointments/wk/shipments",
         "methods"  : ["POST"],
         "lambda"   : {
-            "POST" : "random-function"
+            "POST" : "update_ship_details"
         },
         "authorizer": {
-            "POST" : "NONE"
+            "POST" : "CUSTOM"
         }        
-    }   
+    },
+    {
+        "endpoint" : "appointments/wk/stops",
+        "methods"  : ["POST"],
+        "lambda"   : {
+            "POST" : "update_stop_details"
+        },
+        "authorizer": {
+            "POST" : "CUSTOM"
+        }        
+    },
+    {
+        "endpoint" : "appointments/cancel",
+        "methods"  : ["POST"],
+        "lambda"   : {
+            "POST" : "cancel_appt"
+        },
+        "authorizer": {
+            "POST" : "CUSTOM"
+        }        
+    }     
 ]
 
 meta = {}
@@ -226,14 +246,14 @@ resource "aws_lambda_permission" "{lambda_method}_permission" {{
 
 def print_aws_api_gateway_rest_api(apival):
   api_str = f"""
-  resource "aws_api_gateway_rest_api" "customer_portal" {{
-    name        = "{apival}"
-    description = "{apival} API Gateway"
-    endpoint_configuration {{
-      types = ["REGIONAL"]
-      }}
-  }}
-  """
+resource "aws_api_gateway_rest_api" "customer_portal" {{
+  name        = "{apival}"
+  description = "{apival} API Gateway"
+  endpoint_configuration {{
+    types = ["REGIONAL"]
+    }}
+}}
+"""
   print(api_str)  
 
     
