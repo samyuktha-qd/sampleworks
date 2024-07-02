@@ -1,4 +1,7 @@
 import json
+
+dups=[]
+
 end_points = [
     {
         "endpoint" : "locations/config/final/{m_loc_id}",
@@ -71,7 +74,9 @@ resource "aws_api_gateway_method" "{val['fp']}_{method.lower()}" {{
   authorizer_id = aws_api_gateway_authorizer.portal_authorizer.id
 }}
 """
-        print (gw_method_str)
+        if val['fp']+"_"+method.lower() not in dups:
+            print (gw_method_str)
+            dups.append(val['fp']+"_"+method.lower())
 
 def print_aws_api_gateway_integration(val):
     if val.get('methods') is None:
@@ -106,8 +111,9 @@ resource "aws_api_gateway_integration" "{val['fp']}_{method.lower()}_integration
   uri                     = "arn:aws:apigateway:${{data.aws_region.current.name}}:lambda:path/2015-03-31/functions/${{data.aws_lambda_function.{val['lambda'][method]}.arn}}/invocations"
 }}
 """
-        print (gw_integration)
-
+        if val['fp']+"_"+method.lower()+"_integration" not in dups:
+            print (gw_integration)
+            dups.append(val['fp']+"_"+method.lower()+"_integration")
 
 def print_aws_api_gateway_method_response(val):
     
@@ -148,8 +154,9 @@ resource "aws_api_gateway_method_response" "{val['fp']}_{method.lower()}_respons
   }}
 }}
 """
-        print (gw_method_rsp)
-
+        if val['fp']+"_"+method.lower()+"_response" not in dups:
+            print (gw_method_rsp)
+            dups.append(val['fp']+"_"+method.lower()+"_response")
 
 def print_aws_api_gateway_integration_response(val):
     if val.get('methods') is None:
@@ -185,7 +192,9 @@ resource "aws_api_gateway_integration_response" "{val['fp']}_options_integration
   }}
 }}
 """
-        print (gw_method_int_rsp)
+        if val['fp']+"_"+method.lower()+"_integration_response" not in dups:
+            print (gw_method_int_rsp)
+            dups.append(val['fp']+"_"+method.lower()+"_integration_response")
 
 def print_aws_lambda_permission(val):
     if val.get('lambda') is None:
@@ -201,8 +210,9 @@ resource "aws_lambda_permission" "{lambda_method}_permission" {{
   source_arn = "${{aws_api_gateway_rest_api.customer_portal.execution_arn}}/*"
 }}
 """
-        print (aws_lambda_permission)
-
+        if lambda_method+"_permission" not in dups:
+            print (aws_lambda_permission)
+            dups.append(lambda_method+"_permission")
 
 meta_aa = {}
 
